@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<!-- saved from url=(0054)http://fiddle.jshell.net/tvadg001/aur393s9/show/light/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title> - jsFiddle demo by tvadg001</title>
+  
+  
+  <script type="text/javascript" src="jquery-1.11.0.js"></script>
+  
+  
+  
+  
+  <link rel="stylesheet" type="text/css" href="result-light.css">
+  
+    
+      <script type="text/javascript" src="jcanvas.js"></script>
+    
+  
+  <style type="text/css">
+    /*
+    Please only use the following colors in your assignments. 
+    
+    // Grays
+    lightest-gray:             #FBFBFB;
+    lighter-gray:              #D8D8D8;
+    light-gray:                #CCCCCC;
+    gray:                      #888888;
+    darker-gray:               #666666;
+    darkest-gray:              #333333;
+
+    // Oranges
+    lightest-orange:           #FFDAC1;
+    lighter-orange:            #F9D8BC;
+    light-orange:              #FFB789;
+    pale-orange:               #E8B493;
+    accent-orange:             #E68142;
+    orange:                    #c60;
+    dark-orange:               #AB4600;
+
+    // Blues
+    lighter-blue:              #87ADD2;
+    light-blue:                #6685A8;
+    dark-blue:                 #5780A6;
+    darker-blue:               #576E91;
+
+    // Greens
+    green:                     #738033;
+
+    // Reds
+    light-red:                 #FF4949;
+    red:                       #BB0404;
+    dark-red:                  #880000;
+
+    // Yellows
+    light-yellow:              #FFD364;
+    yellow:                    #EAB51F;
+    dark-yellow:               #D39F0D;
+
+    // Black & white
+    black:                     #000000;
+    white:                     #FFFFFF;
+*/
+
+body {
+   background-color: white;
+}
+
+.assignment-container {
+   border:        1px solid #333333;
+   height:        300px;
+   margin-bottom: 10px;
+   width:         800px;
+}
+
+.button-container {
+   overflow:    visible;
+   white-space: nowrap;
+   width:       800px;
+   word-wrap:   none;
+}
+
+.container-label {
+   font-size: 20px;
+   display: block;
+}
+
+.example-button {
+   background-color: #c60;
+   border:           none;
+   color:            white;
+   cursor:           pointer;
+   font-size:        16px;
+   height:           30px;
+   margin:           0 2px 5px 0;
+   width:            100px;
+}
+
+.reset-button, .run-button, .run-button1, .run-button2 {
+   background-color: #c60;
+   border:           none;
+   color:            white;
+   cursor:           pointer;
+   font-size:        16px;
+   height:           40px;
+   margin-bottom:    5px;
+   width:            100px;
+}
+
+.reset-button:hover, .run-button:hover, .run-button1:hover, .run-button2:hover {
+   background-color: #AB4600;
+}
+
+.right-align {
+   float: right;
+}
+
+.textarea-style {
+   height:        170px;
+   margin-bottom: 15px;
+   width:         200px;
+}
+
+/* 
+  Add any additional CSS rules below 
+  Please avoid using !important in any rules
+*/
+#panel, .run-button, .run-button1, .run-button2, .example-button, .reset-button {
+    padding: 5px;
+    text-align: center;
+    background-color: #880000;
+    border: solid 2px #000000;
+}
+
+#panel {
+    padding: 100px;
+}
+  </style>
+  
+
+
+
+<script type="text/javascript">//<![CDATA[
+$(window).load(function(){
+/*
+  Two javascript libraries have been included for your use 
+  Please do not use any other external javascript library
+  
+  Included libraries:
+     - jQuery
+     - jCanvas
+
+  Documentation / references:
+  References: 
+     - HTML/CSS/JavaScript
+     http://www.w3schools.com/
+     https://developer.mozilla.org/en-US/Learn/HTML
+     - jQuery
+     http://learn.jquery.com/
+     http://www.w3schools.com/jquery/default.asp
+     
+  API:
+     - jQuery
+     http://api.jquery.com/
+     - jCavanas  
+     http://projects.calebevans.me/jcanvas/docs/
+*/
+
+// Stores the id of the canvas element
+this.canvasId = 'drawingCanvas';
+
+// Stores the id of the assignment container
+this.divContainerId = 'assignmentContainer'; 
+
+// Stores the id of the input textarea
+this.inputTextareaId = 'inputData';
+
+// Stores the id of the onput textarea
+this.outputTextareaId = 'outputData';
+
+// Initializes and returns |cellSize| number of cells
+this.initilizeCells = function(cellSize) {
+    // Creates an array of cells
+    var cells = new Array(cellSize);
+    for (var i = 0; i < cellSize; i++) {
+      // Stores the x position of the cell, and the label
+      cells[i] = 'C' + (i+1);
+    }
+  
+    return cells;
+};
+
+// Initializes 20 cells
+this.cells = this.initilizeCells(20);
+
+// Gets a reference to the canvas
+this.$canvas = $('#' + this.canvasId);
+
+// Sets default spacing to 0
+this.spacing = 0;
+
+// Sets the cell height to always be 50 pixels from the bottom of the canvas
+this.cellHeight = this.$canvas.height() - 50;
+
+// Sets the tracking spacing to fit all 6 tracks
+this.trackSpacing = (this.$canvas.height() - 100) / 6;
+
+// Sets a reference to the global scope
+var self = this;
+
+// Initializes listeners and resets any values
+this.init = function() {
+    
+   // Clears canvas
+   self.clearCanvas();
+  
+   // Draw cell and track template
+   self.drawTracksAndCells();
+    
+    // Adds a click event listeners to the 'run-sorting' button
+   $('.run-button').click(function() {
+       $("#panel").slideUp("slow");
+       // Clears canvas
+       self.clearCanvas();
+  
+       // Draw cell and track template
+       self.drawTracksAndCells();
+     
+       // Runs algorithm
+       self.run();
+   });
+    
+   // Adds a click event listener to the 'Reset' button
+   $('.reset-button').click(function() {
+       $("#panel").slideUp("slow");
+       self.clearCanvas();
+       self.drawTracksAndCells();
+   });
+  
+   // Adds click event listeners to all the 'Example' buttons
+   $('.example-button').click(function() {
+       $("#panel").slideUp("slow");
+ self.loadExample($(this).attr('number'));
+   });
+};
+
+// Clears canvas of all rendered elements
+this.clearCanvas = function() {
+   // Clears the drawing canvas of any preiously rendered elements
+   self.$canvas.clearCanvas();
+};
+
+// Draws cells and tracks
+this.drawTracksAndCells = function() {
+  
+    // Draws the cells
+    this.drawCells();
+  
+    // Draws the tracks and their labels
+    this.drawTrackLabels();
+};
+
+// Loads pre-configured examples into the inputs
+this.loadExample = function(example) {
+    // Gets a reference to the input textarea
+    var $inputTextarea = $('#' + self.inputTextareaId);
+  
+    // Pre-defined examples
+    switch(example) {
+        // All examples must follow the same format
+        case '1':
+          $inputTextarea.val('8\n'        +
+                            '1 c1 c3\n'   +
+                            '2 c5 c2\n'   +
+                            '3 c8 c11\n'  +
+                            '4 c6 c9\n'   +
+                            '5 c4 c17\n'  +
+                            '6 c12 c13\n' +
+                            '7 c14 c15\n' +
+                            '8 c16 c18');
+        break;
+        
+        case '2':
+          $inputTextarea.val('6\n'        +
+                            '1 c12 c14\n' +
+                            '2 c7 c10\n'  +
+                            '3 c6 c1\n'   +
+                            '4 c8 c11\n'  +
+                            '5 c5 c9\n'   +
+                            '6 c2 c13');
+        break;
+        
+        case '3':
+          $inputTextarea.val('7\n'       +
+                            '1 c1 c12\n' +
+                            '2 c3 c10\n' +
+                            '3 c5 c8\n'  +
+                            '4 c7 c14\n' +
+                            '5 c2 c11\n' +
+                            '6 c4 c9\n'  +
+                            '7 c6 c13');
+        break;
+        
+        default:
+          $inputTextarea.val('');
+    }
+  
+};
+
+// Reads input and returns an array of objects
+this.readInputs = function() {
+  // Gets a reference to the input textarea
+  var $inputTextArea = $('#' + self.inputTextareaId);
+  
+  // Stores all the lines parsed from the input area
+  var lines = $inputTextArea.val().split('\n');
+  
+  // Assumes first line stores the number of wire connections
+  var numberOfConnections = lines.shift();
+  
+  // Creates an array to store all the wire connections
+  var wireConnections = new Array(parseInt(numberOfConnections));
+  
+  // Stores number of lines read
+  var linesRead = 0;
+  
+  // Iterates through each of lines and creates a wire object
+  lines.forEach(function(line, index){ 
+      var lineContents = line.split(/\s/g);
+      
+      // Checks to see if the line is a valid wire declaration
+      if (lineContents.length === 3) {
+        wireConnections[index] = {
+          number:        lineContents[0],
+          source:        lineContents[1],
+          destination:   lineContents[2],
+          track:         (index + 1)
+        };
+      }
+      
+      // This is just error checking for invalid input or missing input
+      linesRead++;
+  });
+
+  if (linesRead != parseInt(numberOfConnections)) {
+     throw 'Parsing error.';
+  }
+  else {
+     return wireConnections;
+  }
+  
+};
+
+// Draws |cellSize| number of tracks in the canvas
+this.drawCells = function() {
+    this.clearCanvas();
+  
+    // Finds equal spacing based on the number of cells
+    self.spacing = self.$canvas.width() / self.cells.length;
+  
+    // Draws each cell in the canvas.
+    for (var i = 0; i < self.cells.length; i++) {
+        self.$canvas.drawRect({
+          fillStyle: 'white',
+          strokeStyle: '#333333',
+          strokeWidth: 2,
+          x: (spacing * i) + 20, 
+          y: self.cellHeight,
+          width: 30,
+          height: 50
+        }).drawText({
+          strokeStyle: '#333333',
+          strokeWidth: 1,
+          x: (spacing * i) + 20, 
+          y: self.cellHeight,
+          fontSize: 12,
+          fontFamily: 'Helvetica, sans-serif',
+          text: self.cells[i]
+        });
+    }
+};
+
+// Draws the wire connection between two cells
+this.drawWireConnection = function(wireConnection) {
+  // Get the source and destination index of the referenced cells
+  var sourceIndex = self.cells.indexOf(wireConnection.source.toUpperCase());
+  var desinationIndex = cells.indexOf(wireConnection.destination.toUpperCase());
+
+  // Obtain xLeft and xRight values for the wire
+  var xLeft = (self.spacing * sourceIndex) + 10;
+  var xRight = (self.spacing * desinationIndex) + 25;
+  
+  // Calculates the position for the middle of the wire
+  var middlePosition = Math.min(xRight, xLeft) + (Math.abs(xRight - xLeft) / 2);
+  
+  // Calculates the track height for the wire
+  var trackHeight = (self.cellHeight - 50) - ((wireConnection.track - 1) * self.trackSpacing);
+  
+  // Also print out the wire label
+  self.$canvas.drawLine({
+        strokeStyle: '#87ADD2',
+        strokeWidth: 3,
+        x1: xLeft,  y1: self.cellHeight - 25,
+        x2: xLeft,  y2: trackHeight,
+        x3: xRight, y3: trackHeight,
+        x4: xRight, y4: self.cellHeight - 25
+    }).drawText({
+        strokeStyle: '#FF4949',
+        strokeWidth: 1,
+        x: middlePosition, 
+        y: trackHeight - 7,
+        fontSize: 12,
+        fontFamily: 'Helvetica, sans-serif',
+        text: 'w' + wireConnection.number
+    });
+};
+
+// Draws the track labels
+this.drawTrackLabels = function() {
+  // Draw the 6 tracks and label them
+  for (var i = 0; i < 6; i++) {
+    
+    var trackYPosition = (self.cellHeight - 50) - (i * self.trackSpacing);
+    
+    self.$canvas.drawLine({
+        strokeStyle: '#EFEFEF',
+        strokeWidth: 10,
+        x1: 0,  y1: trackYPosition,
+        x2: self.$canvas.width(),  y2: trackYPosition
+    }).drawText({
+        strokeStyle: '#333333',
+        strokeWidth: 1,
+        x: self.$canvas.width() - 10, 
+        y: trackYPosition,
+        fontSize: 12,
+        fontFamily: 'Helvetica, sans-serif',
+        text: (i + 1)
+    });
+  }
+};
+
+// Returns the density (# of tracks used)
+this.getDensity = function(wireConnections) {
+    // Returns the density of the tracks used
+    return Math.max.apply(Math, wireConnections.map(function(o) {
+            return o.track;
+           }));
+};
+
+// Draws all the wire connections
+this.drawWireConnections = function(wireConnections) {
+    // Iterates over each wire connection and draws each
+    wireConnections.forEach(function(wireConnection){
+        self.drawWireConnection(wireConnection);
+    });
+};
+
+// Prints contents to the output text area
+this.outputString = function(string) {
+    $('#' + self.outputTextareaId).html(string);
+};
+
+// Prints the formatted textual output
+this.printTextOutput = function(wireConnections) {
+  
+    // Sort the wires based on the tracks they use
+    wireConnections.sort(function(wire1, wire2) {
+	    // Ascending: first age less than the previous
+	    return wire1.track - wire2.track;
+    });
+  
+    // Creates an empty string to store the output
+    var output = '';
+  
+    // Lists connections in a string
+    wireConnections.forEach(function(wireConnection, index) {
+        output += (index + 1) + ' ' + wireConnection.source + ' ' + wireConnection.destination + ' ' + wireConnection.track + '\n';
+    });
+    
+    // Gets the track density
+    var trackDensity = this.getDensity(wireConnections);
+    output += trackDensity + ' tracks used';
+  
+    // Prints output to textarea
+    this.outputString(output);
+};
+
+//Print Sorted Output****
+
+// Stores the id of the onput textarea
+this.SortedOutputTextareaId = 'SortedOutputData';
+
+// Prints contents to the Sorted output text area
+this.outputString1 = function(string) {
+    $('#' + self.SortedOutputTextareaId).html(string);
+};
+
+
+// Prints the formatted textual output
+this.printSortedOutput = function(wireConnections) {
+  
+    // Sort the wires based on the tracks they use
+    wireConnections.sort(function(wire1, wire2) {
+	    // Ascending: first age less than the previous
+	    return wire1.track - wire2.track;
+    });
+  
+    // Creates an empty string to store the output
+    var SortedOutput = '';
+  
+    // Lists connections in a string
+    wireConnections.forEach(function(wireConnection, index) {
+        SortedOutput += (index + 1) + ' ' + wireConnection.source + ' ' + wireConnection.destination + ' ' + wireConnection.track + '\n';
+    });
+    
+    // Gets the track density
+    var trackDensity = this.getDensity(wireConnections);
+    SortedOutput += trackDensity + ' tracks used';
+  
+    // Prints output to textarea
+    this.outputString1(SortedOutput);
+}; 
+
+/*******************************************************************/
+/* If you choose to create more functions please add them here     */
+
+
+/*******************************************************************/
+
+// Adds a click event listeners to the 'run-sorting' button
+   $('.run-button1').click(function() {
+       $("#panel").slideUp("slow");
+       // Clears canvas
+       self.clearCanvas();
+  
+       // Draw cell and track template
+       self.drawTracksAndCells();
+     
+       // Runs algorithm
+       self.run_sorting();
+   });
+    
+    // Adds a click event listeners to the 'run-routing' button
+   $('.run-button2').click(function() {
+
+       $("#panel").slideUp("slow");
+       // Clears canvas
+       self.clearCanvas();
+  
+       // Draw cell and track template
+       self.drawTracksAndCells();
+     
+       // Runs algorithm
+       self.run_routing();
+   });
+
+  
+// Runs your code
+this.run = function() {
+
+    // Declares an array variable to store wire connections
+    var wireConnections = [];
+  
+    try {
+        /*
+       Reads input and parses out wire inputs
+       Returns an array of wire connection objects
+       
+       Each wire connection object has four properties:
+          - number:      The number of the wire
+          - source:      The starting location of the wire
+          - destination: The ending location of the wire
+          - track:       The track number the wire should be placed on (The default puts each wire on its own track)
+          
+          An example of accessing a property of an object is below:
+          var a = wireConnections[0].number; // This assigns the number of the first wire connection to the variable a
+    */
+        wireConnections = self.readInputs();
+    }
+    catch(error) {
+        // Failed to parse input
+        this.outputString('Failed to parse input');
+        return;
+    }
+
+    // Draws the wire connections
+    this.drawWireConnections(wireConnections);
+ 
+};//End of run function
+
+
+// Runs Sorting code :
+this.run_sorting = function() {
+
+    // Declares an array variable to store wire connections
+    var wireConnections = [];
+      
+    try {
+        wireConnections = self.readInputs();
+    }       
+    catch(error) {
+        // Failed to parse input
+        this.outputString('Failed to parse input');
+        return;
+    }
+    
+    //Sorting Of tracks :
+    var i=0, j=0, temp=0;
+    index = wireConnections.length;
+    for(i=0; i<index; i++)
+    {
+        	if(cells.indexOf(wireConnections[i].source.toUpperCase())>
+               cells.indexOf(wireConnections[i].destination.toUpperCase()))
+            {
+            	temp = wireConnections[i].source;
+                wireConnections[i].source = wireConnections[i].destination;
+                wireConnections[i].destination = temp;
+            }
+    }
+        
+    for(i=0; i<index; i++)
+        for(j=i+1; j<index; j++)
+        {
+            if(cells.indexOf(wireConnections[j].source.toUpperCase()) < cells.indexOf(wireConnections[i].source.toUpperCase()))
+            {
+                temp = wireConnections[j].source;
+                wireConnections[j].source = wireConnections[i].source;
+                wireConnections[i].source = temp;
+                
+                temp = wireConnections[j].destination;
+                wireConnections[j].destination = wireConnections[i].destination;
+                wireConnections[i].destination = temp;
+            }
+        } 
+    
+     // Clears canvas
+   self.clearCanvas();
+    
+    // Draw cell and track template
+   self.drawTracksAndCells();
+        
+    // Draws the Sorted wire connections:
+    this.drawWireConnections(wireConnections);
+  
+    // Prints Sorted textual output:
+    this.printSortedOutput(wireConnections);
+    
+    return wireConnections;
+            
+};//End of run_sorting  
+
+// Runs Routing code :
+this.run_routing = function(wireConnections) {
+    
+    try {
+
+        wireConnections = this.run_sorting();
+    }
+        
+    catch(error) {
+        // Failed to parse input
+        this.outputString('Failed to parse input');
+        return;
+    }
+    
+    //Routing of algorithm
+    var i=0, j=0, temp=0;
+    index = wireConnections.length;
+    var DestinationAddress = new Array();
+    for(i=0; i< index; i++)
+    {
+    	DestinationAddress[i] = wireConnections[i].destination;
+    }
+    
+    for(i=1; i<index; i++)
+        for(j=0; j<index; j++)
+        { 
+        	if(cells.indexOf(wireConnections[i].source.toUpperCase()) > cells.indexOf(DestinationAddress[j].toUpperCase()))
+           	{
+                DestinationAddress[j] = wireConnections[i].destination;  
+                
+               	wireConnections[i].track =  DestinationAddress.indexOf(DestinationAddress[j])+1;                  
+                DestinationAddress[i] = 'C' + 0;
+                j = index;
+            }    
+        }
+    
+    // Clears canvas
+   self.clearCanvas();
+    
+    // Draw cell and track template
+   self.drawTracksAndCells();
+    
+    // Draws the wire connections
+    this.drawWireConnections(wireConnections);
+  
+    // Prints textual output
+    this.printTextOutput(wireConnections); 
+};//End of routing code
+
+// Initializes listeners and resets any values
+this.init();
+
+/*Implementation :
+Sorting :
+Important array to look while coding is 'wireConnections'
+
+sort source and destination (in ascending order)of this array in following way-
+1. go on comparing source of one indes with that of destination of the same index.
+2. After comparing, swap both elements when found destination>source
+3. Then, go on comparing source of one index with source of consecutive index.
+4. swap them. Example: source[index1]>source[index2] then swap
+5. follow steps 1 to 4 for all index
+6. keep track number as index+1 as defined before
+7. Draw new sorted tracks and label
+8. Then, return updated 'wireConnections' 
+
+Routing of tracks in following way:
+1. implement sorting(Previous procedure). Take returned 'wireConnections' for further processing
+2. put all destination addresses in one new array 'DestinationAddress[]'
+3. Then compare source of one track with destnation of previous tracks to check the availability using array 'DestinationAddress[]'
+4. If track is available, then replace array element with the destination of the source which has been compared in step 3.
+5. Continue this process for all tracks
+6. Draw routed lines and labels
+
+New features :
+1. Added one more text box to show sorted output
+2. Added 3 different buttons to show unsort, sort and routed output
+*/
+});//]]> 
+
+</script>
+
+</head>
+<body>
+    <button number="1" class="example-button">Example 1</button>
+  <button number="2" class="example-button">Example 2</button>
+  <button number="3" class="example-button">Example 3</button>
+  <table>
+    <tbody><tr>
+      <td>
+         <span class="container-label">Inputs:</span> 
+        <textarea id="inputData" class="textarea-style"></textarea>
+      </td>
+        
+        <td>
+         <span class="container-label">Sorted Output:</span> 
+        <textarea id="SortedOutputData" class="textarea-style"></textarea>
+      </td>
+        
+      <td>
+         <span class="container-label">Routed Output:</span> 
+        <textarea id="outputData" class="textarea-style"></textarea>
+      </td>
+    </tr>
+  </tbody></table>
+  
+  
+  <span class="container-label">Canvas:</span> 
+  <div id="assignmentContainer" class="assignment-container"><canvas id="drawingCanvas" height="300" width="800"></canvas></div>
+  <div class="button-container">
+      <button class="run-button">Unsorted</button>
+      <button class="run-button1">Sorted</button>
+      <button class="run-button2">Routed</button>      
+      <button class="reset-button right-align">Reset</button>
+  </div>
+  
+
+
+
+
+</body></html>
